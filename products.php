@@ -7,6 +7,13 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+if (isset($_POST['search'])) {
+    $search = $conn->real_escape_string($_POST['search']);
+    $sql_search = "SELECT * FROM products WHERE (name LIKE '%$search%') OR (description LIKE '%$search%')";
+    $stmt = $conn->query($sql_search);
+    $results = $stmt->fetch_all(MYSQLI_ASSOC);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['add_product'])) {
         $name = $_POST['name'];
@@ -34,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $result = $conn->query("SELECT * FROM products");
+
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +56,7 @@ $result = $conn->query("SELECT * FROM products");
         <h1>Gestión de Productos</h1>
         <nav>
             <ul>
-                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.php">Inicio</a></li>
                 <li><a href="dashboard.php">Panel de Control</a></li>
                 <li><a href="users.php">Usuarios</a></li>
                 <li><a href="products.php">Productos</a></li>
@@ -73,32 +81,50 @@ $result = $conn->query("SELECT * FROM products");
         </form>
 
         <h2>Lista de Productos</h2>
+        <form action="products.php" method="post">
+            <input type="text" name="search" placeholder="Buscar producto">
+            <button type="submit" class="btn btn-success">Buscar</button>
+            <a href="products.php"><button>Reset</button></a>
+        </form>
         <table>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Imagen</th>
-                <th>Acciones</th>
-            </tr>
-            <?php while($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo $row['id']; ?></td>
-                <td><?php echo $row['name']; ?></td>
-                <td><?php echo $row['description']; ?></td>
-                <td><?php echo $row['price']; ?></td>
-                <td><?php echo $row['stock']; ?></td>
-                <td><img src="images/<?php echo $row['image']; ?>" width="100"></td>
-                <td>
-                    <form action="products.php" method="post" style="display:inline-block;">
-                        <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                        <button type="submit" name="delete_product">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-            <?php endwhile; ?>
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                </tr>
+                <?php
+                $products = isset($results) ? $results : $result->fetch_all(MYSQLI_ASSOC);
+                $num = 1;
+                foreach($products as $product){
+                    $imagePath = 'images/' . $product['image'];
+                ?>
+                <tr>
+                    <td><?php echo $num++; ?></td>
+                    <td><?php echo $product['name']; ?></td>
+                    <td><?php echo $product['description']; ?></td>
+                    <td><?php echo $product['price']; ?></td>
+                    <td><?php echo $product['stock']; ?></td>
+                    <td>
+                        <?php if (file_exists($imagePath)) { ?>
+                            <img src="<?php echo $imagePath; ?>" width="50">
+                        <?php } else { ?>
+                            Imagen no disponible
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <form action="products.php" method="post" style="display:inline-block;">
+                            <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
+                            <button type="submit" name="delete_product">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php } ?>
+            </tbody>
         </table>
         <form action="generate_pdf.php" method="post" target="_blank">
             <button type="submit">Generar Reporte en PDF</button>

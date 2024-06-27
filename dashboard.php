@@ -22,7 +22,7 @@ $role = $_SESSION['role'];
         <h1>Panel de Control</h1>
         <nav>
             <ul>
-                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.php">Inicio</a></li>
                 <li><a href="dashboard.php">Panel de Control</a></li>
                 <?php if ($role == 'admin'): ?>
                 <li><a href="users.php">Usuarios</a></li>

@@ -18,6 +18,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssss", $username, $password, $email, $role);
     $stmt->execute();
     header("Location: users.php");
+
+    $search = isset($_GET['search']) ? $_GET['search'] : '';
+
+    $sql = "SELECT * FROM users WHERE username LIKE ? OR email LIKE ?";
+    $stmt = $conn->prepare($sql);
+    $searchParam = "%" . $search . "%";
+    $stmt->bind_param("ss", $searchParam, $searchParam);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $users = $result->fetch_all(MYSQLI_ASSOC);
     exit;
 }
 
@@ -36,7 +46,7 @@ $result = $conn->query("SELECT * FROM users");
         <h1>Gestión de Usuarios</h1>
         <nav>
             <ul>
-                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.php">Inicio</a></li>
                 <li><a href="dashboard.php">Panel de Control</a></li>
                 <li><a href="users.php">Usuarios</a></li>
                 <li><a href="products.php">Productos</a></li>
@@ -46,6 +56,10 @@ $result = $conn->query("SELECT * FROM users");
     </header>
     <main>
         <h2>Usuarios del Sistema</h2>
+        <form method="GET" action="users.php">
+        <input type="text" name="search" placeholder="Buscar usuario" value="<?php echo htmlspecialchars($search); ?>">
+        <button type="submit">Buscar</button>
+        </form>
         <form action="users.php" method="post">
             <label for="username">Usuario:</label>
             <input type="text" id="username" name="username" required>
