@@ -7,7 +7,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit;
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+$search = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user'])) {
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $email = $_POST['email'];
@@ -18,9 +20,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssss", $username, $password, $email, $role);
     $stmt->execute();
     header("Location: users.php");
+    exit;
+}
 
-    $search = isset($_GET['search']) ? $_GET['search'] : '';
-
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['search_user'])) {
+    $search = $_POST['search'];
     $sql = "SELECT * FROM users WHERE username LIKE ? OR email LIKE ?";
     $stmt = $conn->prepare($sql);
     $searchParam = "%" . $search . "%";
@@ -28,10 +32,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
     $users = $result->fetch_all(MYSQLI_ASSOC);
-    exit;
+} else {
+    $result = $conn->query("SELECT * FROM users");
+    $users = $result->fetch_all(MYSQLI_ASSOC);
 }
-
-$result = $conn->query("SELECT * FROM users");
 ?>
 
 <!DOCTYPE html>
@@ -56,10 +60,6 @@ $result = $conn->query("SELECT * FROM users");
     </header>
     <main>
         <h2>Usuarios del Sistema</h2>
-        <form method="GET" action="users.php">
-        <input type="text" name="search" placeholder="Buscar usuario" value="<?php echo htmlspecialchars($search); ?>">
-        <button type="submit">Buscar</button>
-        </form>
         <form action="users.php" method="post">
             <label for="username">Usuario:</label>
             <input type="text" id="username" name="username" required>
@@ -72,7 +72,12 @@ $result = $conn->query("SELECT * FROM users");
                 <option value="user">Usuario</option>
                 <option value="admin">Administrador</option>
             </select>
-            <button type="submit">Agregar Usuario</button>
+            <button type="submit" name="add_user">Agregar Usuario</button>
+        </form>
+        <form method="POST" action="users.php">
+            <input type="text" name="search" placeholder="Buscar usuario" value="<?php echo htmlspecialchars($search); ?>">
+            <button type="submit" name="search_user">Buscar</button>
+            <a href="users.php"><button>Reset</button></a>
         </form>
         <table>
             <tr>
@@ -81,17 +86,17 @@ $result = $conn->query("SELECT * FROM users");
                 <th>Rol</th>
                 <th>Acciones</th>
             </tr>
-            <?php while($row = $result->fetch_assoc()): ?>
+            <?php foreach($users as $user): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['username']); ?></td>
-                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                <td><?php echo htmlspecialchars($row['role']); ?></td>
+                <td><?php echo htmlspecialchars($user['username']); ?></td>
+                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                <td><?php echo htmlspecialchars($user['role']); ?></td>
                 <td>
-                    <a href="edit_user.php?id=<?php echo $row['id']; ?>">Editar</a>
-                    <a href="delete_user.php?id=<?php echo $row['id']; ?>" onclick="return confirm('¿Estás seguro de eliminar este usuario?');">Eliminar</a>
+                    <a href="edit_user.php?id=<?php echo $user['id']; ?>">Editar</a>
+                    <a href="delete_user.php?id=<?php echo $user['id']; ?>" onclick="return confirm('¿Estás seguro de eliminar este usuario?');">Eliminar</a>
                 </td>
             </tr>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </table>
     </main>
 </body>

@@ -26,11 +26,13 @@ $result = $conn->query("SELECT * FROM products");
     <main>
         <div>
             <center>
+            <h2>Esta es la página principal de Heladería: El Pingüino Maracucho. 🐧</h2>
+            <h3>Donde te entregamos un delicioso helado, para que disfrutes de un refrescante batido 👯</h3>
             <h2>Productos Disponibles</h2>
             <div class="product-list">
                 <?php while($row = $result->fetch_assoc()): ?>
                 <div class="product-item">
-                    <img src="images/<?php echo $row['image']; ?>" alt="<?php echo $row['name']; ?>" class="product-image">
+                    <img src="images/<?php echo $row['image']; ?>" alt="<?php echo $row['name']; ?>" class="product-image" " width="100">
                     <h3><?php echo $row['name']; ?></h3>
                     <p><?php echo $row['description']; ?></p>
                     <p>Precio: $<?php echo $row['price']; ?></p>
