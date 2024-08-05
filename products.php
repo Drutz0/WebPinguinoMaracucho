@@ -56,7 +56,7 @@ $result = $conn->query("SELECT * FROM products");
         <h1>Gestión de Productos</h1>
         <nav>
             <ul>
-                <li><a href="index.php">Inicio</a></li>
+                <li><a href="index.html">Inicio</a></li>
                 <li><a href="dashboard.php">Panel de Control</a></li>
                 <li><a href="users.php">Usuarios</a></li>
                 <li><a href="products.php">Productos</a></li>
